@@ -1,0 +1,6 @@
+view_filter_display.settings_form:
+  title: view filter display
+  description: Configure view filter display.
+  parent: system.admin_config_system
+  route_name: view_filter_display.settings_form
+  weight: 10

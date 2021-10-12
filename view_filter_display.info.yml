@@ -1,0 +1,6 @@
+name: view filter display
+type: module
+description: permet de d&#039;afficher le filtre suivant un affichage
+package: Custom
+core: 8.x
+core_version_requirement: ^8 || ^9
