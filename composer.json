@@ -1,14 +1,14 @@
 {
-    "name": "stephane888/view_filter_display",
-    "description": "filtre les champs de formulaires de vues exposées",
-    "type": "drupal-module-custom",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "stephane888",
-            "email": "kksasteph888@gmail.com"
-        }
-    ],
-    "minimum-stability": "dev",
-    "require": {}
+  "name": "stephane888/view_filter_display",
+  "description": "filtre les champs de formulaires de vues exposées",
+  "type": "drupal-custom-module",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "stephane888",
+      "email": "kksasteph888@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {}
 }
