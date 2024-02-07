@@ -11,12 +11,12 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @Block(
  *   id = "view_filter_display_filter_sort",
- *   admin_label = @Translation(" Filter Sort "),
+ *   admin_label = @Translation(" Filter Sort by hidden "),
  *   category = @Translation(" view filter display ")
  * )
  */
 class FilterSortBlock extends BlockBase {
-  
+
   /**
    *
    * {@inheritdoc}
@@ -70,7 +70,8 @@ class FilterSortBlock extends BlockBase {
       }
     }
     $form['#wrapper_attributes'] = [
-      'class' => ['view_filter_display_filter',
+      'class' => [
+        'view_filter_display_filter',
         $this->configuration['view_name_display_class']
       ]
     ];
@@ -78,21 +79,23 @@ class FilterSortBlock extends BlockBase {
       $form['#attributes']['class'][] = 'view_filter_display_filter';
       $form['#attributes']['class'][] = $this->configuration['view_name_display_class'];
     }
-    
+
     // dump($form);
     return $form;
   }
-  
+
   /**
    *
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
-    return ['view_name_display' => '', 'view_name_display_class' => '',
+    return [
+      'view_name_display' => '',
+      'view_name_display_class' => '',
       'hidden_fields' => []
     ];
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -100,39 +103,42 @@ class FilterSortBlock extends BlockBase {
   public function blockForm($form, FormStateInterface $form_state) {
     $form['view_name_display'] = [
       '#title' => $this->t(' Use view exposed form to create custom form '),
-      '#type' => 'select', '#options' => $this->getViews(), '#required' => TRUE,
+      '#type' => 'select',
+      '#options' => $this->getViews(),
+      '#required' => TRUE,
       '#default_value' => $this->configuration['view_name_display']
     ];
     if (!empty($this->configuration['view_name_display'])) {
       $v = explode(" ", $this->configuration['view_name_display']);
       $form['hidden_fields'] = [
-        '#title' => $this->t(' Select field to hidden'), '#type' => 'checkboxes',
+        '#title' => $this->t(' Select field to hidden'),
+        '#type' => 'checkboxes',
         '#options' => $this->getViewExposedFields($v[0], $v[1]),
         '#default_value' => $this->configuration['hidden_fields']
       ];
-      $form['view_name_display_class'] = ['#title' => $this->t(' class '),
-        '#type' => 'textfield', '#required' => TRUE,
+      $form['view_name_display_class'] = [
+        '#title' => $this->t(' class '),
+        '#type' => 'textfield',
+        '#required' => TRUE,
         '#default_value' => $this->configuration['view_name_display_class']
       ];
     }
     //
     return $form;
   }
-  
+
   /**
    *
    * {@inheritdoc}
    */
   public function blockSubmit($form, FormStateInterface $form_state) {
-    $this->configuration['view_name_display'] = $form_state->getValue(
-        'view_name_display');
-    $this->configuration['hidden_fields'] = $form_state->getValue(
-        ['hidden_fields'
-        ]);
-    $this->configuration['view_name_display_class'] = $form_state->getValue(
-        'view_name_display_class');
+    $this->configuration['view_name_display'] = $form_state->getValue('view_name_display');
+    $this->configuration['hidden_fields'] = $form_state->getValue([
+      'hidden_fields'
+    ]);
+    $this->configuration['view_name_display_class'] = $form_state->getValue('view_name_display_class');
   }
-  
+
   /**
    *
    * @param string $view_name
@@ -154,7 +160,7 @@ class FilterSortBlock extends BlockBase {
     }
     return $fields;
   }
-  
+
   /**
    * --
    */
@@ -174,13 +180,12 @@ class FilterSortBlock extends BlockBase {
           $view->setDisplay($display_id);
           $prev_filters = $view->display_handler->options;
           if (!empty($prev_filters['exposed_block'])) {
-            $options[$view->id() . ' ' . $display_id] = $view->getTitle() . ' (' .
-                $v['display_title'] . ')';
+            $options[$view->id() . ' ' . $display_id] = $view->getTitle() . ' (' . $v['display_title'] . ')';
           }
         }
       }
     }
     return $options;
   }
-  
+
 }
