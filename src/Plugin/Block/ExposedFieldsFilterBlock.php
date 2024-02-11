@@ -15,7 +15,7 @@ use Drupal\views\Form\ViewsExposedForm;
  *
  * @Block(
  *   id = "view_filter_display_exposed_fields_filter",
- *   admin_label = @Translation("  Filter Sort by active fields "),
+ *   admin_label = @Translation(" Filter Sort by active fields "),
  *   category = @Translation(" view filter display ")
  * )
  */
@@ -54,7 +54,6 @@ class ExposedFieldsFilterBlock extends BlockBase {
         'effect' => 'fade'
       ]
     ];
-
     $form['fields'] = [
       '#type' => 'details',
       '#open' => true,
@@ -275,6 +274,10 @@ class ExposedFieldsFilterBlock extends BlockBase {
               '#value' => 'Réinitialiser la recherche'
             ]
           ];
+        }
+        // Enable show_submit
+        if ($this->configuration['show_submit']) {
+          $form['actions']['#access'] = true;
         }
         $form['#wrapper_attributes'] = [
           'class' => [
