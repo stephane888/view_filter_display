@@ -33,7 +33,8 @@ class ExposedFieldsFilterBlock extends BlockBase {
       'show_submit' => false,
       'show_sort_by' => false,
       'show_sort_order' => false,
-      'show_reset_link' => false
+      'show_reset_link' => false,
+      'auto_submit' => false
     ];
   }
 
@@ -135,10 +136,16 @@ class ExposedFieldsFilterBlock extends BlockBase {
       '#type' => 'checkbox',
       '#default_value' => $this->configuration['show_sort_order']
     ];
+
     $form['show_reset_link'] = [
       '#title' => $this->t(' Show reset_link '),
       '#type' => 'checkbox',
       '#default_value' => $this->configuration['show_reset_link']
+    ];
+    $form['auto_submit'] = [
+      '#title' => $this->t(' auto_submit '),
+      '#type' => 'checkbox',
+      '#default_value' => $this->configuration['auto_submit']
     ];
     return $form;
   }
@@ -161,6 +168,7 @@ class ExposedFieldsFilterBlock extends BlockBase {
     $this->configuration['show_sort_by'] = $form_state->getValue('show_sort_by');
     $this->configuration['show_sort_order'] = $form_state->getValue('show_sort_order');
     $this->configuration['show_reset_link'] = $form_state->getValue('show_reset_link');
+    $this->configuration['auto_submit'] = $form_state->getValue('auto_submit');
   }
 
   /**
@@ -279,6 +287,12 @@ class ExposedFieldsFilterBlock extends BlockBase {
         if ($this->configuration['show_submit']) {
           $form['actions']['#access'] = true;
         }
+        //
+        if ($this->configuration['auto_submit']) {
+          $form['#attributes']['class'][] = 'vfd__exposed_fields_filter_auto_submit';
+          $form['#attached']['library'][] = 'view_filter_display/auto_submit';
+        }
+        //
         $form['#wrapper_attributes'] = [
           'class' => [
             'view_filter_display_filter',
