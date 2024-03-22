@@ -20,7 +20,7 @@ use Drupal\views\Form\ViewsExposedForm;
  * )
  */
 class ExposedFieldsFilterBlock extends BlockBase {
-
+  
   /**
    *
    * {@inheritdoc}
@@ -37,7 +37,7 @@ class ExposedFieldsFilterBlock extends BlockBase {
       'auto_submit' => false
     ];
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -73,7 +73,7 @@ class ExposedFieldsFilterBlock extends BlockBase {
       $settings = $form_state->getCompleteFormState()->getValue('settings');
     }
     $view_name_display = !empty($settings['view_name_display']) ? $settings['view_name_display'] : $this->configuration['view_name_display'];
-
+    
     if ($view_name_display) {
       list($view_id, $display_id) = explode(" ", $view_name_display);
       $fields = $this->getViewExposedFields($view_id, $display_id);
@@ -120,7 +120,7 @@ class ExposedFieldsFilterBlock extends BlockBase {
       '#type' => 'textfield',
       '#default_value' => $this->configuration['view_name_display_class']
     ];
-
+    
     $form['show_submit'] = [
       '#title' => $this->t(' Show submit '),
       '#type' => 'checkbox',
@@ -136,7 +136,7 @@ class ExposedFieldsFilterBlock extends BlockBase {
       '#type' => 'checkbox',
       '#default_value' => $this->configuration['show_sort_order']
     ];
-
+    
     $form['show_reset_link'] = [
       '#title' => $this->t(' Show reset_link '),
       '#type' => 'checkbox',
@@ -149,13 +149,13 @@ class ExposedFieldsFilterBlock extends BlockBase {
     ];
     return $form;
   }
-
+  
   /**
    */
   public static function ExposedFieldsFilter_select($form, FormStateInterface $form_state) {
     return $form['settings']['fields'];
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -170,7 +170,7 @@ class ExposedFieldsFilterBlock extends BlockBase {
     $this->configuration['show_reset_link'] = $form_state->getValue('show_reset_link');
     $this->configuration['auto_submit'] = $form_state->getValue('auto_submit');
   }
-
+  
   /**
    *
    * @param string $view_name
@@ -193,7 +193,7 @@ class ExposedFieldsFilterBlock extends BlockBase {
     }
     return $fields;
   }
-
+  
   /**
    * --
    */
@@ -220,7 +220,7 @@ class ExposedFieldsFilterBlock extends BlockBase {
     }
     return $options;
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -244,11 +244,11 @@ class ExposedFieldsFilterBlock extends BlockBase {
         ];
         $view->setArguments($args);
       }
-
+      
       $form = $this->getFormExposed($view, $view_display);
-
+      
       $enableInputs = $this->configuration['fields'];
-
+      
       $inputs = Element::children($form);
       if ($inputs && $enableInputs) {
         foreach ($inputs as $fieldName) {
@@ -268,6 +268,7 @@ class ExposedFieldsFilterBlock extends BlockBase {
           $form['show_reset_link'] = [
             '#type' => 'html_tag',
             '#tag' => 'div',
+            '#weight' => 10,
             '#attributes' => [
               'class' => [
                 'show_reset_link'
@@ -308,7 +309,7 @@ class ExposedFieldsFilterBlock extends BlockBase {
     }
     return [];
   }
-
+  
   /**
    * Retourne le formualire exposed.
    *
@@ -328,5 +329,5 @@ class ExposedFieldsFilterBlock extends BlockBase {
     $form = $exposed_form->renderExposedForm(true);
     return $form;
   }
-
+  
 }

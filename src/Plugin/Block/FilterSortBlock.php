@@ -9,14 +9,15 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Provides an form exposed catalogue.
  *
+ * @deprecated
  * @Block(
  *   id = "view_filter_display_filter_sort",
- *   admin_label = @Translation(" Filter Sort by hidden "),
+ *   admin_label = @Translation(" Filter Sort by hidden @deprecated "),
  *   category = @Translation(" view filter display ")
- * )
+ *  )
  */
 class FilterSortBlock extends BlockBase {
-
+  
   /**
    *
    * {@inheritdoc}
@@ -79,11 +80,11 @@ class FilterSortBlock extends BlockBase {
       $form['#attributes']['class'][] = 'view_filter_display_filter';
       $form['#attributes']['class'][] = $this->configuration['view_name_display_class'];
     }
-
+    
     // dump($form);
     return $form;
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -95,7 +96,7 @@ class FilterSortBlock extends BlockBase {
       'hidden_fields' => []
     ];
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -126,7 +127,7 @@ class FilterSortBlock extends BlockBase {
     //
     return $form;
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -138,7 +139,7 @@ class FilterSortBlock extends BlockBase {
     ]);
     $this->configuration['view_name_display_class'] = $form_state->getValue('view_name_display_class');
   }
-
+  
   /**
    *
    * @param string $view_name
@@ -160,7 +161,7 @@ class FilterSortBlock extends BlockBase {
     }
     return $fields;
   }
-
+  
   /**
    * --
    */
@@ -187,5 +188,5 @@ class FilterSortBlock extends BlockBase {
     }
     return $options;
   }
-
+  
 }
