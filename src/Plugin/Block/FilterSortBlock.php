@@ -175,7 +175,6 @@ class FilterSortBlock extends BlockBase {
        */
       $view = $val->getExecutable();
       $displays = $view->storage->get('display');
-      // dump($displays);
       foreach ($displays as $display_id => $v) {
         if (str_contains($display_id, "page_")) {
           $view->setDisplay($display_id);
