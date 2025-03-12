@@ -249,27 +249,40 @@ class ExposedFieldsFilterBlock extends BlockBase {
       $enableInputs = $this->configuration['fields'];
       // On recupere les filtres et on ajoute redefinie le status du champs
       // exposed.
-      $filters = $view->display_handler->getHandlers('filter');
-      foreach ($filters as $key => $filter) {
-        /**
-         *
-         * @var \Drupal\more_fields\Plugin\views\filter\MoreFieldsCheckboxList $filter
-         */
-        $filter->options['exposed'] = $enableInputs[$key]['status'] ?? false;
-      }
+      // $filters = $view->display_handler->getHandlers('filter');
+      // foreach ($filters as $key => $filter) {
+      // /**
+      // *
+      // * @var \Drupal\more_fields\Plugin\views\filter\MoreFieldsCheckboxList
+      // $filter
+      // */
+      // $filter->options['exposed'] = $enableInputs[$key]['status'] ?? false;
+      // }
       $form = $this->getFormExposed($view, $view_display);
+      $inputs = Element::children($form);
+      // On desactive tous les champs.
+      foreach ($inputs as $input) {
+        if (is_array($form[$input])) {
+          $form[$input]['#access'] = false;
+        }
+      }
       if ($enableInputs) {
         foreach ($enableInputs as $fieldName => $enableInput) {
           $new_key = !empty($form[$fieldName . '_wrapper']) ? $fieldName . '_wrapper' : $fieldName;
-          if (!empty($enableInputs[$fieldName]['status']) && !empty($form[$new_key])) {
-            $form[$new_key]['#title_display'] = !$enableInput['show_label'] ? 'invisible' : $form[$new_key]['#title_display'];
-            $form[$new_key]['#attributes']['class'][] = $enableInput['class'];
-            if ($enableInputs[$fieldName]['hide_all_option']) {
-              if (isset($form[$new_key]['#options']['All']))
-                unset($form[$new_key]['#options']['All']);
+          //
+          if (!empty($form[$new_key])) {
+            if (!empty($enableInputs[$fieldName]['status'])) {
+              $form[$fieldName]['#access'] = true;
+              $form[$new_key]['#title_display'] = !$enableInput['show_label'] ? 'invisible' : $form[$new_key]['#title_display'];
+              $form[$new_key]['#attributes']['class'][] = $enableInput['class'];
+              if ($enableInputs[$fieldName]['hide_all_option']) {
+                if (isset($form[$new_key]['#options']['All']))
+                  unset($form[$new_key]['#options']['All']);
+              }
             }
           }
         }
+        // dd($form);
         // Enable show_reset_link
         if ($this->configuration['show_reset_link']) {
           $form['show_reset_link'] = [
@@ -336,5 +349,4 @@ class ExposedFieldsFilterBlock extends BlockBase {
     $form = $exposed_form->renderExposedForm(true);
     return $form;
   }
-  
 }
