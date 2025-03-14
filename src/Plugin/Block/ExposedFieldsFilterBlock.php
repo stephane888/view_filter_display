@@ -188,7 +188,8 @@ class ExposedFieldsFilterBlock extends BlockBase {
     $filters = $view->display_handler->getOption('filters');
     foreach ($filters as $key => $val) {
       if (!empty($val['exposed'])) {
-        $fields[$key] = $val['expose']['label'] . ' (' . $val['expose']['identifier'] . ')';
+        $id = !empty($val['expose']['identifier']) ? $val['expose']['identifier'] : $key;
+        $fields[$id] = $val['expose']['label'] . ' (' . $id . ')';
       }
     }
     return $fields;
@@ -267,12 +268,15 @@ class ExposedFieldsFilterBlock extends BlockBase {
         }
       }
       if ($enableInputs) {
+        // dump($enableInputs, $form);
         foreach ($enableInputs as $fieldName => $enableInput) {
           $new_key = !empty($form[$fieldName . '_wrapper']) ? $fieldName . '_wrapper' : $fieldName;
+          
           //
           if (!empty($form[$new_key])) {
+            
             if (!empty($enableInputs[$fieldName]['status'])) {
-              $form[$fieldName]['#access'] = true;
+              $form[$new_key]['#access'] = true;
               $form[$new_key]['#title_display'] = !$enableInput['show_label'] ? 'invisible' : $form[$new_key]['#title_display'];
               $form[$new_key]['#attributes']['class'][] = $enableInput['class'];
               if ($enableInputs[$fieldName]['hide_all_option']) {
@@ -305,9 +309,9 @@ class ExposedFieldsFilterBlock extends BlockBase {
           ];
         }
         // Enable show_submit
-        if (!$this->configuration['show_submit']) {
-          $form['actions']['#access'] = false;
-        }
+        // if (!$this->configuration['show_submit']) {
+        $form['actions']['#access'] = $this->configuration['show_submit'];
+        // }
         //
         if ($this->configuration['auto_submit']) {
           $form['#attributes']['class'][] = 'vfd__exposed_fields_filter_auto_submit';
