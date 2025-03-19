@@ -9,6 +9,9 @@ use Drupal\Core\Form\SubformState;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Form\FormState;
 use Drupal\views\Form\ViewsExposedForm;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\layoutgenentitystyles\Services\LayoutgenentitystylesServices;
 
 /**
  * Provides an form exposed catalogue.
@@ -19,7 +22,32 @@ use Drupal\views\Form\ViewsExposedForm;
  *   category = @Translation(" view filter display ")
  * )
  */
-class ExposedFieldsFilterBlock extends BlockBase {
+class ExposedFieldsFilterBlock extends BlockBase implements ContainerFactoryPluginInterface {
+  /**
+   *
+   * @var \Drupal\layoutgenentitystyles\Services\LayoutgenentitystylesServices
+   */
+  protected $LayoutgenentitystylesServices;
+  
+  /**
+   *
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param string $plugin_definition
+   * @param LayoutgenentitystylesServices $entity_type_manager
+   */
+  function __construct(array $configuration, $plugin_id, $plugin_definition, LayoutgenentitystylesServices $LayoutgenentitystylesServices) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->LayoutgenentitystylesServices = $LayoutgenentitystylesServices;
+  }
+  
+  /**
+   *
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static($configuration, $plugin_id, $plugin_definition, $container->get('layoutgenentitystyles.add.style.theme'));
+  }
   
   /**
    *
@@ -34,7 +62,9 @@ class ExposedFieldsFilterBlock extends BlockBase {
       'show_sort_by' => false,
       'show_sort_order' => false,
       'show_reset_link' => false,
-      'auto_submit' => false
+      'auto_submit' => false,
+      'icone_render' => '',
+      'view_filter_display_style' => 'view_filter_display/view-filter-display'
     ];
   }
   
@@ -77,11 +107,16 @@ class ExposedFieldsFilterBlock extends BlockBase {
     if ($view_name_display) {
       list($view_id, $display_id) = explode(" ", $view_name_display);
       $fields = $this->getViewExposedFields($view_id, $display_id);
-      foreach ($fields as $fieldname => $label) {
+      foreach ($fields as $fieldname => $value) {
+        $label = $value['label'];
         $form['fields'][$fieldname] = [
           '#title' => $this->t(" $label "),
           '#type' => 'details',
           '#open' => false
+        ];
+        $form['fields'][$fieldname]['operator'] = [
+          '#type' => 'hidden',
+          '#default_value' => $value['operator']
         ];
         $form['fields'][$fieldname]['status'] = [
           '#title' => $this->t(" Enable "),
@@ -109,14 +144,19 @@ class ExposedFieldsFilterBlock extends BlockBase {
           '#default_value' => !empty($this->configuration['fields'][$fieldname]['number_options_to_show']) ? $this->configuration['fields'][$fieldname]['number_options_to_show'] : 10
         ];
         $form['fields'][$fieldname]['class'] = [
-          '#title' => $this->t(" Class css "),
+          '#title' => $this->t(" Class for input "),
           '#type' => 'textfield',
           '#default_value' => !empty($this->configuration['fields'][$fieldname]['class']) ? $this->configuration['fields'][$fieldname]['class'] : ''
+        ];
+        $form['fields'][$fieldname]['class_container'] = [
+          '#title' => $this->t(" Class for container "),
+          '#type' => 'textfield',
+          '#default_value' => !empty($this->configuration['fields'][$fieldname]['class_container']) ? $this->configuration['fields'][$fieldname]['class_container'] : ''
         ];
       }
     }
     $form['view_name_display_class'] = [
-      '#title' => $this->t(' class '),
+      '#title' => $this->t(' Class container form '),
       '#type' => 'textfield',
       '#default_value' => $this->configuration['view_name_display_class']
     ];
@@ -147,6 +187,16 @@ class ExposedFieldsFilterBlock extends BlockBase {
       '#type' => 'checkbox',
       '#default_value' => $this->configuration['auto_submit']
     ];
+    $form['icone_render'] = [
+      '#title' => $this->t(' icone before render '),
+      '#type' => 'select',
+      '#options' => [
+        '' => t('None'),
+        'filter' => t('Filter'),
+        'sort' => t('sort')
+      ],
+      '#default_value' => $this->configuration['icone_render']
+    ];
     return $form;
   }
   
@@ -169,6 +219,9 @@ class ExposedFieldsFilterBlock extends BlockBase {
     $this->configuration['show_sort_order'] = $form_state->getValue('show_sort_order');
     $this->configuration['show_reset_link'] = $form_state->getValue('show_reset_link');
     $this->configuration['auto_submit'] = $form_state->getValue('auto_submit');
+    $this->configuration['icone_render'] = $form_state->getValue('icone_render');
+    $library = $this->configuration['view_filter_display_style'];
+    $this->LayoutgenentitystylesServices->addStyleFromModule($library, 'view_filter_display_style', 'default');
   }
   
   /**
@@ -183,13 +236,19 @@ class ExposedFieldsFilterBlock extends BlockBase {
     $view->initHandlers();
     $exposed_form = $view->display_handler->getOption('exposed_form');
     if (!empty($exposed_form["options"])) {
-      $fields['sort_by'] = $exposed_form["options"]['exposed_sorts_label'];
+      $fields['sort_by'] = [
+        'label' => $exposed_form["options"]['exposed_sorts_label'],
+        'operator' => ''
+      ];
     }
     $filters = $view->display_handler->getOption('filters');
     foreach ($filters as $key => $val) {
       if (!empty($val['exposed'])) {
         $id = !empty($val['expose']['identifier']) ? $val['expose']['identifier'] : $key;
-        $fields[$id] = $val['expose']['label'] . ' (' . $id . ')';
+        $fields[$id] = [
+          'label' => $val['expose']['label'] . ' (' . $id . ')',
+          'operator' => $val['operator']
+        ];
       }
     }
     return $fields;
@@ -268,17 +327,23 @@ class ExposedFieldsFilterBlock extends BlockBase {
         }
       }
       if ($enableInputs) {
+        // if (isset($enableInputs['mynumberkk5']) &&
+        // $enableInputs['mynumberkk5']['status'] == 1) {
         // dump($enableInputs, $form);
+        // }
         foreach ($enableInputs as $fieldName => $enableInput) {
           $new_key = !empty($form[$fieldName . '_wrapper']) ? $fieldName . '_wrapper' : $fieldName;
           
           //
           if (!empty($form[$new_key])) {
-            
             if (!empty($enableInputs[$fieldName]['status'])) {
               $form[$new_key]['#access'] = true;
               $form[$new_key]['#title_display'] = !$enableInput['show_label'] ? 'invisible' : $form[$new_key]['#title_display'];
               $form[$new_key]['#attributes']['class'][] = $enableInput['class'];
+              if (!empty($enableInput['operator'])) {
+                $form[$new_key]['#attributes']['class'][] = 'op--' . $enableInput['operator'];
+              }
+              $form[$new_key]['#wrapper_attributes']['class'][] = !empty($enableInput['class_container']) ? $enableInput['class_container'] : '';
               if ($enableInputs[$fieldName]['hide_all_option']) {
                 if (isset($form[$new_key]['#options']['All']))
                   unset($form[$new_key]['#options']['All']);
@@ -292,7 +357,7 @@ class ExposedFieldsFilterBlock extends BlockBase {
           $form['show_reset_link'] = [
             '#type' => 'html_tag',
             '#tag' => 'div',
-            '#weight' => 10,
+            '#weight' => 15,
             '#attributes' => [
               'class' => [
                 'show_reset_link'
@@ -310,7 +375,14 @@ class ExposedFieldsFilterBlock extends BlockBase {
         }
         // Enable show_submit
         // if (!$this->configuration['show_submit']) {
-        $form['actions']['#access'] = $this->configuration['show_submit'];
+        $form['actions']['#access'] = $this->configuration['show_submit'] ? true : false;
+        $form['actions']['#weight'] = 15;
+        if ($form['actions']['#access']) {
+          $form['actions']['submit']['#theme_wrappers'][] = 'view_filter_display_button';
+          $form['actions']['submit']['#attributes']['class'][] = 'btn';
+          $form['actions']['submit']['#attributes']['class'][] = 'btn-outline-primary ps-3';
+          $form['actions']['submit']['#attributes']['class'][] = 'd-flex justify-content-center align-items-center';
+        }
         // }
         //
         if ($this->configuration['auto_submit']) {
@@ -327,6 +399,16 @@ class ExposedFieldsFilterBlock extends BlockBase {
         if (isset($form['#attributes']['class'])) {
           $form['#attributes']['class'][] = 'view_filter_display_exposed_fields_filter';
           $form['#attributes']['class'][] = $this->configuration['view_name_display_class'];
+        }
+        //
+        if (!empty($this->configuration['icone_render'])) {
+          $form['#attributes']['class'][] = $this->configuration['icone_render'] . '__form';
+          $form['#attributes']['class'][] = 'form__filtsort';
+          return [
+            '#theme' => 'view_filter_display',
+            '#form' => $form,
+            '#settings' => $this->configuration
+          ];
         }
         return $form;
       }

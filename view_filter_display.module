@@ -1,6 +1,7 @@
 <?php
 
 /**
+ *
  * @file
  * Primary module hooks for view filter display module.
  *
@@ -8,3 +9,20 @@
  * This file is no longer required in Drupal 8.
  * @see https://www.drupal.org/node/2217931
  */
+
+/**
+ * Implements hook_theme().
+ */
+function view_filter_display_theme() {
+  return [
+    'view_filter_display' => [
+      'variables' => [
+        'form' => NULL,
+        'settings' => NULL
+      ]
+    ],
+    'view_filter_display_button' => [
+      'render element' => 'element'
+    ]
+  ];
+}
